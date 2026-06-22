@@ -326,7 +326,6 @@ Another small divergence was that I made the LLM-powered tools return fallback s
 I used Claude Code as an implementation assistant, but I did not ask it to build the whole project at once. I gave it one milestone at a time and used my `planning.md` as the directed by the assignment guidelines.
 
 I had a problem in using claude code in the 
-### Instance 1: Tool implementation
 
 I directed Claude Code to implement each tool in `tools.py` one at a time. For `search_listings`, I gave it the tool spec from `planning.md` and told it to use `load_listings()` instead of rewriting file-loading logic. I specifically checked that the function returned a list of listing dictionaries, not score tuples, and that the no-results case returned `[]` instead of raising an exception. I revised the output expectations because AI-generated code can sometimes overcomplicate search ranking. I kept the behavior simple: filter by price and size, score by keyword overlap, drop zero-overlap listings, and sort the remaining results.
 
