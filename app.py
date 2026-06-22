@@ -43,8 +43,61 @@ def handle_query(user_query: str, wardrobe_choice: str) -> tuple[str, str, str]:
            string and return it along with session["outfit_suggestion"] and
            session["fit_card"].
     """
-    # TODO: implement this function
-    return "Agent not yet implemented.", "", ""
+    # ── Guard: empty query ────────────────────────────────────────────────────
+    if not user_query or not user_query.strip():
+        return (
+            "Please enter a search query — e.g. 'vintage graphic tee under $30, size M'.",
+            "",
+            "",
+        )
+
+    # ── Select wardrobe ───────────────────────────────────────────────────────
+    wardrobe = (
+        get_example_wardrobe()
+        if wardrobe_choice == "Example wardrobe"
+        else get_empty_wardrobe()
+    )
+
+    # ── Run agent ─────────────────────────────────────────────────────────────
+    session = run_agent(user_query, wardrobe)
+
+    # ── Error path ────────────────────────────────────────────────────────────
+    if session["error"]:
+        return (
+            f"⚠️ {session['error']}",
+            "Search returned no results — outfit suggestion skipped.",
+            "",
+        )
+
+    # ── Success path: format the top listing ──────────────────────────────────
+    item = session["selected_item"]
+
+    def _fmt(label: str, value) -> str:
+        """Return 'Label: value\n' or '' when value is absent/None/empty."""
+        if value is None or value == "" or value == []:
+            return ""
+        if isinstance(value, list):
+            value = ", ".join(str(v) for v in value)
+        return f"{label}: {value}\n"
+
+    listing_text = (
+        _fmt("Title",      item.get("title"))
+        + _fmt("Price",    f"${item.get('price', '')}")
+        + _fmt("Platform", item.get("platform"))
+        + _fmt("Condition",item.get("condition"))
+        + _fmt("Brand",    item.get("brand"))
+        + _fmt("Size",     item.get("size"))
+        + _fmt("Colors",   item.get("colors"))
+        + _fmt("Style",    item.get("style_tags"))
+        + "\n"
+        + _fmt("Description", item.get("description"))
+    ).rstrip()
+
+    return (
+        listing_text,
+        session["outfit_suggestion"] or "",
+        session["fit_card"] or "",
+    )
 
 
 # ── interface ─────────────────────────────────────────────────────────────────
